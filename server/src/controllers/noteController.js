@@ -3,24 +3,26 @@ const Note = require('../models/Note');
 
 const addNote = async (req, res) => {
     try {
-        const userId = req.user; 
+        const userId = req.user;
         const user = await User.findById(userId).exec();
         if (!user) {
             return res.status(404).json({ message: 'User not found.' });
         }
 
-        const { well_being, headache, runny_nose, itchy_nose, itchy_eyes, cough, free_note, note_date } = req.body;
+        const date = req.params.noteDate;
+
+        const { well_being, headache, runny_nose, itchy_nose, itchy_eyes, cough, free_note } = req.body;
 
         const note = await Note.create({
-            noteUser: user._id, 
-            well_being: well_being || 0,
+            noteUser: user._id,
+            wellBeing: well_being || 0,
             headache: headache || 0,
-            runny_nose: runny_nose || 0,
-            itchy_nose: itchy_nose || 0,
-            itchy_eyes: itchy_eyes || 0,
+            runnyNose: runny_nose || 0,
+            itchyNose: itchy_nose || 0,
+            itchyEyes: itchy_eyes || 0,
             cough: cough || 0,
-            free_note: free_note || "",
-            note_date: note_date
+            freeNote: free_note || "",
+            noteDate: date
         });
 
         user.userNotes.push(note._id);
@@ -31,28 +33,58 @@ const addNote = async (req, res) => {
             note: note
         });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "An error occurred during note creation." });
+        return res.status(500).json({ message: "An error occurred during note creation." });
     }
 };
+
+const updateNote = async (req, res) => {
+    try {
+        const userId = req.user;
+        const updatedNote = req.body;
+        const noteDate = req.params.noteDate;
+
+        const note = await Note.findOneAndUpdate(
+            { userId: userId, noteDate: noteDate },
+            { $set: updatedNote },
+            { new: true }
+        );
+
+        if (!note) {
+            return res.status(404).json({ message: "Note not found for this date." });
+        }
+
+        return res.status(200).json({
+            message: "Note updated successfully.",
+            note: updatedNote
+        });
+    } catch (err) {
+        return res.status(400).json({ error: err.message });
+    }
+
+}
 
 const getNoteByDate = async (req, res) => {
     try {
         const userId = req.user;
-        const { note_date } = req.body;
+        const noteDate = req.params.noteDate;
 
-        const note = await Note.findOne({ noteUser: userId, note_date });
-        return res.status(200).json({ 
+        const note = await Note.findOne({ noteUser: userId, noteDate: noteDate });
+
+        if (!note) {
+            return res.status(404).json({ message: "Note not found." });
+        }
+
+        return res.status(200).json({
             message: "Note found succesfully.",
-            note: note 
+            note: note
         });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "An error occurred, note cannot be find." });
+        return res.status(500).json({ message: "An error occurred, note cannot be find." });
     }
 };
 
-module.exports = { 
-    addNote, 
+module.exports = {
+    addNote,
+    updateNote,
     getNoteByDate
 };

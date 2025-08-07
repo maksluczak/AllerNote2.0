@@ -5,7 +5,8 @@ const verifyJWT = require("../middlewares/verifyJWT");
 const router = express.Router();
 router.use(verifyJWT);
 
-router.post('/', noteController.addNote);
-router.get('/', noteController.getNoteByDate);
+router.post('/:noteDate', noteController.addNote);
+router.put('/:noteDate', noteController.updateNote);
+router.get('/:noteDate', noteController.getNoteByDate);
 
 module.exports = router;

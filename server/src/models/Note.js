@@ -7,7 +7,7 @@ const noteSchema = new Schema({
         default: Date.now,
         required: true
     },
-    well_being: {
+    wellBeing: {
         type: Number, min: 0, max: 5,
         default: 0
     },
@@ -15,15 +15,15 @@ const noteSchema = new Schema({
         type: Number, min: 0, max: 5,
         default: 0
     },
-    runny_nose: {
+    runnyNose: {
         type: Number, min: 0, max: 5,
         default: 0
     },
-    itchy_nose: {
+    itchyNose: {
         type: Number, min: 0, max: 5,
         default: 0
     },
-    itchy_eyes: {
+    itchyEyes: {
         type: Number, min: 0, max: 5,
         default: 0
     },
@@ -31,12 +31,13 @@ const noteSchema = new Schema({
         type: Number, min: 0, max: 5,
         default: 0
     },
-    free_note: {
+    freeNote: {
         type: String,
         default: ''
     },
-    note_date: {
+    noteDate: {
         type: String,
+        default: '',
         required: true
     },  
     noteUser: {
