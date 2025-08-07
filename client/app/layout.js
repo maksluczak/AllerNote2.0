@@ -3,6 +3,7 @@ import Nav from "@/components/nav/Nav";
 import BackgroundGraphic from "@/components/background/bg-graphics";
 import "./globals.css";
 import Footer from "@/components/footer/Footer";
+import { AuthProvider } from "@/context/AuthContext";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -26,9 +27,13 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Nav />
-        <main className="body-spacing ">{children}</main>
-        <Footer />
+        <AuthProvider>
+          <Nav />
+          <main className="body-spacing ">
+            {children}
+          </main>
+          <Footer />
+        </AuthProvider>
         <div className="fixed bottom-0 right-0 -z-50">
           <BackgroundGraphic />
         </div>

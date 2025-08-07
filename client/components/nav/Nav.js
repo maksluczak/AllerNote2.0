@@ -4,25 +4,49 @@ import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import Hamburger from "./Hamburger";
 import LoginButton from "./LoginButton";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Nav() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [navIsOpen, setNavIsOpen] = useState(false);
   const [submenuIsOpen, setSubmenuIsOpen] = useState(false);
   const submenuRef = useRef(null);
+  const [userProfile, setUserProfile] = useState(null);
+
+  const { user } = useAuth();
+
+  const fetchUserById = async () => {
+    if (!user.id) return;
+    try {
+      const res = await fetch(`http://localhost:8080/user/${user.id}`);
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error('Failed to fetch user details:', errorData);
+        throw new Error(`HTTP error! ${res.status}`);
+      }
+      const data = await res.json();
+      setUserProfile({ username: data.username });
+      setIsLoggedIn(true);
+    } catch (err) {
+      console.error(`Error fetching user details: ${err.message}`);
+    }
+  }
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchUserById();
+    } else {
+      setIsLoggedIn(null);
+    }
+  }, [user?.id]);
 
   function clickOutsideHandler(e) {
-    // Close menu when clicking outside
     if (submenuRef.current && !submenuRef.current.contains(e.target)) {
       setSubmenuIsOpen(false);
     }
   }
   useEffect(() => {
     document.addEventListener("mousedown", (e) => clickOutsideHandler(e));
-    // Usage
-    const myCookie = getCookie("myCookieName");
-    console.log(myCookie);
-
     return () => {
       document.removeEventListener("mousedown", (e) => clickOutsideHandler(e));
     };
@@ -37,7 +61,6 @@ export default function Nav() {
 
   return (
     <nav className="w-full bg-white fixed top-0 left-0 shadow-sm z-[9999]">
-      {/* Content wrapper */}
       <div className="body-spacing flex justify-between items-center  py-3">
         <Link href="/">
           <Image src="/logo.png" width={40} height={30} alt="" />
@@ -48,7 +71,6 @@ export default function Nav() {
           isClicked={navIsOpen}
         />
 
-        {/* main navigation */}
         <ul
           className={`flex flex-col items-start absolute p-2 bg-white top-[calc(100%+1rem)] right-4 shadow-md rounded-md transform ${
             navIsOpen
@@ -58,11 +80,6 @@ export default function Nav() {
         >
           {isLoggedIn && (
             <>
-              {/* <li className="block">
-                <Link href="/" className="block w-full p-2 text-left">
-                  Strona główna
-                </Link>
-              </li> */}
               <li className="block">
                 <Link href="/kalendarz" className="block w-full p-2 text-left">
                   Kalendarz
@@ -81,7 +98,6 @@ export default function Nav() {
             </Link>
           </li>
           <li className="flex flex-col-reverse md:relative">
-            {/* button with user name */}
             <div className="flex justify-center border-t pt-4 mt-2 md:pt-0 md:mt-0 md:ml-4 md:peer">
               <LoginButton
                 ref={submenuRef}
@@ -89,10 +105,9 @@ export default function Nav() {
                   if (isLoggedIn) setSubmenuIsOpen((prev) => !prev);
                 }}
                 isLoggedIn={isLoggedIn}
-                username="Maksumilian Łuczak"
+                username={userProfile}
               />
             </div>
-            {/* submenu */}
             <ul
               className={`md:flex md:flex-col md:items-start md:absolute md:p-2 md:bg-white md:top-[calc(100%+1.5rem)] md:right-0 md:shadow-md md:rounded-md md:transform ${
                 submenuIsOpen

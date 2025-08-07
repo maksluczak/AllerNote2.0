@@ -1,18 +1,22 @@
 "use client";
-import { jwt_decode } from "jwt-decode";
 
 import React, { useState, useEffect } from "react";
 import { formatDate } from "@/utils/date";
-import renderButtons from "./CustomRadio";
 import CustomRadio from "./CustomRadio";
 import CustomRadioToEdit from "./CustomRadioToEdit";
 import ButtonSecondary from "../buttons/ButtonSecondary";
 import ButtonPrimary from "../buttons/ButtonPrimary";
+import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 export default function SymptomsNote({ selectedDate }) {
   const today = new Date();
+  const selectedDateToString = formatDate(selectedDate);
 
-  const [samopoczucie, setSamopoczocie] = useState(null);
+  const { user } = useAuth();
+  console.log(user);
+
+  const [samopoczucie, setSamopoczucie] = useState(null);
   const [bolGlowy, setBolGlowy] = useState(null);
   const [katar, setKatar] = useState(null);
   const [nos, setNos] = useState(null);
@@ -21,12 +25,13 @@ export default function SymptomsNote({ selectedDate }) {
   const [note, setNote] = useState("");
 
   const [isEditing, setIsEditing] = useState(false);
+  const [noteExists, setNoteExists] = useState(false);
 
   const SYMPTOMS = [
     {
       symptom: "samopoczucie",
       currentValue: samopoczucie,
-      stateSetter: setSamopoczocie,
+      stateSetter: setSamopoczucie,
     },
     {
       stateSetter: setBolGlowy,
@@ -55,7 +60,51 @@ export default function SymptomsNote({ selectedDate }) {
     },
   ];
 
-  const selectedDateStr = formatDate(selectedDate);
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchNote = async () => {
+      try {
+        const data = await apiFetch(`/note/${selectedDateToString}`);
+
+        if (data && data.note) {
+          const n = data.note;
+          setSamopoczucie(n.wellBeing);
+          setBolGlowy(n.headache);
+          setKatar(n.runnyNose);
+          setNos(n.itchyNose);
+          setOko(n.itchyEyes);
+          setKaszel(n.cough);
+          setNote(n.freeNote || "");
+          setNoteExists(true); 
+        } else {
+          resetForm();
+        }
+      } catch (err) {
+        if (err.message === "API error 404") {
+          setNoteExists(false);
+          resetForm();
+        } else {
+          console.error("Brak notatki lub błąd pobierania:", err.message);
+          resetForm();
+        }
+      }
+    };
+
+    fetchNote();
+  }, [selectedDateToString, user]);
+
+  const resetForm = () => {
+    setSamopoczucie(null);
+    setBolGlowy(null);
+    setKatar(null);
+    setNos(null);
+    setOko(null);
+    setKaszel(null);
+    setNote("");
+    setNoteExists(false);
+    setIsEditing(false);
+  };
 
   async function submitHandler(e) {
     e.preventDefault();
@@ -69,35 +118,27 @@ export default function SymptomsNote({ selectedDate }) {
       itchy_eyes: oko,
       cough: kaszel,
       free_note: note,
+      note_date: selectedDateToString
     };
 
-    const jwtToken = getCookie("jwt");
-
-    // const decodedToken = jwt_decode(jwtToken);
-    // console.log("Decoded JWT:", decodedToken);
-
     try {
-      // send data to the server
-      const res = await fetch("http://localhost:3000/api/kalendarz", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json", // Specify JSON format
-          Authorization: `Bearer ${jwtToken}`,
-        },
-        body: JSON.stringify(body), // Convert the body to JSON
-      });
-
-      if (!res.ok) {
-        console.error(`Error: ${res.status} ${res.statusText}`);
-        return;
+      if (noteExists) {
+        await apiFetch(`/note/${selectedDateToString}`, {
+          method: "PUT",
+          body: JSON.stringify(body),
+        });
+        console.log("Zaktualizowano notatkę");
+      } else {
+        await apiFetch(`/note/${selectedDateToString}`, {
+          method: "POST",
+          body: JSON.stringify(body),
+        });
+        setNoteExists(true);
+        console.log("Utworzono nową notatkę");
       }
-
-      const data = await res.json();
-      console.log(data);
     } catch (err) {
-      console.error(err);
+      console.error("Błąd zapisu notatki:", err.message);
     }
-    console.table(data);
   }
 
   function isToday(date) {
@@ -108,17 +149,14 @@ export default function SymptomsNote({ selectedDate }) {
       today.getDate() === selected.getDate()
     );
   }
-  const getCookie = (name) => {
-    const cookies = document.cookie.split("; ");
-    const cookie = cookies.find((c) => c.startsWith(`${name}=`));
-    return cookie ? cookie.split("=")[1] : null;
-  };
+
+  if (!user) return <p>Musisz być zalogowany, aby dodać notatkę.</p>;
 
   return (
     <section className="flex flex-col">
       <header className="mb-9">
         <h1 className="flex justify-between items-center text-3xl font-bold">
-          {selectedDateStr}
+          {selectedDateToString}
           {selectedDate < today && !isToday(selectedDate) && (
             <ButtonSecondary>
               Co niósł wiatr?{" "}

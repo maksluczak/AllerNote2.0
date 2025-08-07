@@ -1,10 +1,10 @@
 "use client";
 import React, { useEffect } from "react";
-
 import InputBox from "./InputBox";
 import ButtonPrimary from "../buttons/ButtonPrimary";
 import LinkUnderline from "../buttons/LinkUnderline";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Form({
   password,
@@ -20,7 +20,7 @@ export default function Form({
   const [inputPassword, setInputPassword] = React.useState("");
   const [inputRepeatedPassword, setInputRepeatedPassword] = React.useState("");
 
-  // console.error(registration);
+  const { login } = useAuth();
 
   useEffect(() => {
     console.table({
@@ -38,61 +38,57 @@ export default function Form({
       registration &&
       (!inputName || !inputEmail || !inputPassword || !inputRepeatedPassword)
     ) {
-      console.log("Fill all fields");
+      alert("Uzupełnij wszystkie pola.");
       return;
     } else if (!registration && (!inputEmail || !inputPassword)) {
-      console.log("Fill all fields");
+      alert("Uzupełnij wszystkie pola.");
       return;
     }
 
-    if (registration && inputPassword != inputRepeatedPassword) {
-      console.log("Passwords don't match");
+    if (registration && inputPassword !== inputRepeatedPassword) {
+      alert("Hasła się nie zgadzają.");
       return;
     }
-    console.log("submit");
-    // senda data to server
-    console.log("Data sent to server");
-    registration
-      ? console.table({
-          inputName,
-          inputEmail,
-          inputPassword,
-          inputRepeatedPassword,
-        })
-      : console.table({
-          inputEmail,
-          inputPassword,
-        });
 
     try {
-      const path = `${registration ? "/register" : "/auth"}`;
+      const path = `${registration ? "/auth/register" : "/auth/login"}`;
       const body = registration
         ? { username: inputName, email: inputEmail, password: inputPassword }
         : { email: inputEmail, password: inputPassword };
 
-      const res = await fetch(path, {
+      const res = await fetch(`http://localhost:8080${path}`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", // Specify JSON format
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(body), // Convert the body to JSON
+        credentials: "include",
+        body: JSON.stringify(body),
       });
 
       if (!res.ok) {
-        console.error(`Error: ${res.status} ${res.statusText}`);
+        const err = await res.json();
+        console.error("Błąd:", err.message || res.statusText);
+        alert(err.message || "Błąd logowania/rejestracji");
         return;
       }
 
       const data = await res.json();
-      console.log(data);
-      // clearInputs();
-      clearInputs();
-      registration && router.push("/login");
-      !registration && router.push("/kalendarz");
+
+      if (registration) {
+        alert("Zarejestrowano pomyślnie. Zaloguj się.");
+        clearInputs();
+        router.push("/login");
+      } else {
+        login(data.token);
+        clearInputs();
+        router.push("/kalendarz");
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Błąd:", err);
+      alert("Błąd serwera.");
     }
   }
+
   function clearInputs() {
     setInputName("");
     setInputEmail("");
@@ -107,7 +103,7 @@ export default function Form({
           value={inputName}
           onChange={(e) => setInputName(e.target.value)}
           type="text"
-          id="nicname"
+          id="nickname"
           label="nazwa użytkownika"
           placeholder="Gustaw"
         />
@@ -128,7 +124,7 @@ export default function Form({
           onChange={(e) => setInputPassword(e.target.value)}
           type="password"
           id="password"
-          label="haslo"
+          label="hasło"
           placeholder="**********"
         />
       )}
