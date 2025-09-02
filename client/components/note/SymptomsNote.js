@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { formatDate } from "@/utils/date";
+import { formatDate, formatDateForBackend } from "@/utils/date";
 import CustomRadio from "./CustomRadio";
 import CustomRadioToEdit from "./CustomRadioToEdit";
 import ButtonSecondary from "../buttons/ButtonSecondary";
@@ -12,6 +12,7 @@ import { useAuth } from "@/context/AuthContext";
 export default function SymptomsNote({ selectedDate }) {
   const today = new Date();
   const selectedDateToString = formatDate(selectedDate);
+  const selectedDateForBackend = formatDateForBackend(selectedDate);
 
   const { user } = useAuth();
 
@@ -64,7 +65,7 @@ export default function SymptomsNote({ selectedDate }) {
 
     const fetchNote = async () => {
       try {
-        const data = await apiFetch(`/note/${selectedDateToString}`);
+        const data = await apiFetch(`/note/${selectedDateForBackend}`);
 
         if (data && data.note) {
           const n = data.note;
@@ -91,7 +92,7 @@ export default function SymptomsNote({ selectedDate }) {
     };
 
     fetchNote();
-  }, [selectedDateToString, user]);
+  }, [selectedDateForBackend, user]);
 
   const resetForm = () => {
     setSamopoczucie(null);
@@ -117,18 +118,18 @@ export default function SymptomsNote({ selectedDate }) {
       itchy_eyes: oko,
       cough: kaszel,
       free_note: note,
-      note_date: selectedDateToString
+      note_date: selectedDateForBackend
     };
 
     try {
       if (noteExists) {
-        await apiFetch(`/note/${selectedDateToString}`, {
+        await apiFetch(`/note/${selectedDateForBackend}`, {
           method: "PUT",
           body: JSON.stringify(body),
         });
         console.log("Zaktualizowano notatkę");
       } else {
-        await apiFetch(`/note/${selectedDateToString}`, {
+        await apiFetch(`/note/${selectedDateForBackend}`, {
           method: "POST",
           body: JSON.stringify(body),
         });
