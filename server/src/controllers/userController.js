@@ -20,9 +20,13 @@ const getUserById = async (req, res) => {
 const updateUsernameByUserId = async (req, res) => {
     try {
         const userId = req.params.id;
-        const newUsername = req.body;
+        const { username } = req.body;
 
-        const user = await User.findByIdAndUpdate(userId, {username: newUsername});
+        if (!username) {
+            return res.status(400).json({ message: 'Username is required' });
+        }
+
+        const user = await User.findByIdAndUpdate(userId, { username }, { new: true} );
         return res.status(201).json({ "message": `Username updated: ${user}`});
     } catch (err) {
         return res.status(404).json({ error: err.message });
@@ -32,10 +36,14 @@ const updateUsernameByUserId = async (req, res) => {
 const updateEmailByUserId = async (req, res) => {
     try {
         const userId = req.params.id;
-        const newEmail = req.body;
+        const { email } = req.body;
 
-        const user = await User.findByIdAndUpdate(userId, {email: newEmail});
-        return res.status(201).json({ "message": `Username updated: ${user}`});
+        if (!email) {
+            return res.status(400).json({ message: 'Email is required' });
+        }
+
+        const user = await User.findByIdAndUpdate(userId, { email }, { new: true });
+        return res.status(201).json({ "message": `Email updated: ${user}`});
     } catch (err) {
         return res.status(404).json({ error: err.message });
     }
@@ -44,12 +52,16 @@ const updateEmailByUserId = async (req, res) => {
 const updatePasswordByUserId = async (req, res) => {
     try {
         const userId = req.params.id;
-        const newPassword = req.body;
+        const { password } = req.body;
 
-        const hashedPwd = await bcrypt.hash(newPassword, 10);
+        if (!password) {
+            return res.status(400).json({ message: 'Password is required' });
+        }
 
-        const user = await User.findByIdAndUpdate(userId, {password: hashedPwd});
-        return res.status(201).json({ "message": `Username updated: ${user}`});
+        const hashedPwd = await bcrypt.hash(password, 10);
+
+        const user = await User.findByIdAndUpdate(userId, {password: hashedPwd}, { new: true });
+        return res.status(201).json({ "message": `Password updated: ${user}`});
     } catch (err) {
         return res.status(404).json({ error: err.message });
     }
