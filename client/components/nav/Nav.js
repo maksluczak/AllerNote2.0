@@ -53,13 +53,6 @@ export default function Nav() {
     };
   }, []);
 
-  function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(";").shift();
-    return null;
-  }
-
   return (
     <nav className="w-full bg-white fixed top-0 left-0 shadow-sm z-[9999]">
       <div className="body-spacing flex justify-between items-center  py-3">
@@ -80,11 +73,7 @@ export default function Nav() {
         >
           {isLoggedIn && (
             <>
-              <li className="block">
-                <Link href="/ustawienia" className="block w-full p-2 text-left">
-                  Ustawienia
-                </Link>
-              </li>
+
               <li className="block">
                 <Link href="/kalendarz" className="block w-full p-2 text-left">
                   Kalendarz
@@ -97,15 +86,9 @@ export default function Nav() {
               Co niesie wiatr?
             </Link>
           </li>
-          {/* <li className="block">
-            <Link href="/ustawienia" className="block w-full p-2 text-left">
-              Ustawienia
-            </Link>
-          </li> */}
-          <li className="flex flex-col-reverse md:relative">
+          <li className="flex flex-col-reverse md:relative" ref={submenuRef}>
             <div className="flex justify-center border-t pt-4 mt-2 md:pt-0 md:mt-0 md:ml-4 md:peer">
               <LoginButton
-                ref={submenuRef}
                 onClick={() => {
                   if (isLoggedIn) setSubmenuIsOpen((prev) => !prev);
                 }}
@@ -115,8 +98,8 @@ export default function Nav() {
             </div>
             <ul
               className={`md:flex md:flex-col md:items-start md:absolute md:p-2 md:bg-white md:top-[calc(100%+1.5rem)] md:right-0 md:shadow-md md:rounded-md md:transform ${submenuIsOpen
-                ? "md:visible md:translate-y-0 md:opacity-100 submenu-transition-in"
-                : "md:invisible md:-translate-y-5 md:opacity-0 submenu-transition-out"
+                  ? "md:visible md:translate-y-0 md:opacity-100 submenu-transition-in"
+                  : "md:invisible md:-translate-y-5 md:opacity-0 submenu-transition-out"
                 } `}
             >
               <li className="block border-t pt-2 mt-2 md:pt-0 md:mt-0 md:border-t-0">
@@ -128,7 +111,6 @@ export default function Nav() {
                 <li className="block">
                   <button
                     onClick={() => {
-                      console.log("alskdfj");
                       setIsLoggedIn(false);
                     }}
                     className="block w-full p-2 text-left"

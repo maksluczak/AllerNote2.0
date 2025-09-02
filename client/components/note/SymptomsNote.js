@@ -14,8 +14,6 @@ export default function SymptomsNote({ selectedDate }) {
   const selectedDateToString = formatDate(selectedDate);
 
   const { user } = useAuth();
-  console.log("dupa")
-  console.log(user.UserInfo.id);
 
   const [samopoczucie, setSamopoczucie] = useState(null);
   const [bolGlowy, setBolGlowy] = useState(null);
