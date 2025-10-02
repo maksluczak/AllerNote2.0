@@ -5,16 +5,13 @@ import VoivodeshipSelect2 from "@/components/alergeny/VoivodeshipSelect2";
 import { useAuth } from "@/context/AuthContext";
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const userId = user?.UserInfo?.id;
 
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
   const [isEditingUsername, setIsEditingUsername] = useState(false);
-  const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [inputUsername, setInputUsername] = useState("");
-  const [inputEmail, setInputEmail] = useState("");
   const [inputPassword, setInputPassword] = useState("");
   const [inputRepeatedPassword, setInputRepeatedPassword] = useState("");
 
@@ -27,7 +24,6 @@ export default function SettingsPage() {
         const data = await res.json();
         if (res.ok) {
           setUsername(data.username || "");
-          setEmail(data.email || "");
         } else {
           console.error("Błąd pobierania:", data.message);
         }
@@ -57,9 +53,6 @@ export default function SettingsPage() {
       if (type === "username") {
         path = `/user/username/${userId}`;
         body = { username: inputUsername };
-      } else if (type === "email") {
-        path = `/user/email/${userId}`;
-        body = { email: inputEmail };
       } else if (type === "password") {
         path = `/user/password/${userId}`;
         body = { password: inputPassword };
@@ -85,11 +78,6 @@ export default function SettingsPage() {
         setInputUsername("");
         setIsEditingUsername(false);
       }
-      if (type === "email") {
-        setEmail(inputEmail);
-        setInputEmail("");
-        setIsEditingEmail(false);
-      }
       if (type === "password") {
         setInputPassword("");
         setInputRepeatedPassword("");
@@ -106,10 +94,6 @@ export default function SettingsPage() {
       setInputUsername("");
       setIsEditingUsername(false);
     }
-    if (type === "email") {
-      setInputEmail("");
-      setIsEditingEmail(false);
-    }
     if (type === "password") {
       setInputPassword("");
       setInputRepeatedPassword("");
@@ -125,7 +109,7 @@ export default function SettingsPage() {
 
       <div className="py-5 px-4">
         <label className="text-gray-800 text-2xl font-bold block mb-2">
-          Nazwa użytkownika
+          Edytuj nazwę użytkownika
         </label>
         <div className="relative flex items-center gap-2">
           <input
@@ -149,7 +133,10 @@ export default function SettingsPage() {
               <button
                 type="button"
                 className="px-4 py-2 rounded-full border border-green-600 text-green-600"
-                onClick={() => submitHandler("username")}
+                onClick={() => {
+                  submitHandler("username")
+                  logout()
+                }}
               >
                 Zapisz
               </button>
@@ -167,49 +154,7 @@ export default function SettingsPage() {
 
       <div className="py-5 px-4">
         <label className="text-gray-800 text-2xl font-bold block mb-2">
-          Email
-        </label>
-        <div className="relative flex items-center gap-2">
-          <input
-            type="text"
-            value={isEditingEmail ? inputEmail : email}
-            onChange={(e) => setInputEmail(e.target.value)}
-            disabled={!isEditingEmail}
-            placeholder="Podaj nowy email"
-            className="w-full text-gray-800 text-base pl-2 pr-2 py-3 outline-none bg-transparent border-b-2 border-black focus:ring-0 focus:border-black"
-          />
-          {!isEditingEmail ? (
-            <button
-              type="button"
-              className="px-4 py-2 rounded-full border border-black"
-              onClick={() => setIsEditingEmail(true)}
-            >
-              Edytuj
-            </button>
-          ) : (
-            <>
-              <button
-                type="button"
-                className="px-4 py-2 rounded-full border border-green-600 text-green-600"
-                onClick={() => submitHandler("email")}
-              >
-                Zapisz
-              </button>
-              <button
-                type="button"
-                className="px-4 py-2 rounded-full border border-red-600 text-red-600"
-                onClick={() => cancelEdit("email")}
-              >
-                Anuluj
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-
-      <div className="py-5 px-4">
-        <label className="text-gray-800 text-2xl font-bold block mb-2">
-          Hasło
+          Edytuj hasło
         </label>
         <div className="flex flex-col gap-4">
           <input
@@ -242,7 +187,10 @@ export default function SettingsPage() {
               <button
                 type="button"
                 className="px-4 py-2 rounded-full border border-green-600 text-green-600"
-                onClick={() => submitHandler("password")}
+                onClick={() => {
+                  submitHandler("password")
+                  logout()
+                }}
               >
                 Zapisz
               </button>
@@ -260,7 +208,7 @@ export default function SettingsPage() {
 
       <div className="py-5 px-4">
         <label className="text-gray-800 text-2xl font-bold block mb-2">
-          Województwo
+          Edytuj województwo
         </label>
         <div className="flex items-center gap-2 md:gap-4">
           <VoivodeshipSelect2 />
