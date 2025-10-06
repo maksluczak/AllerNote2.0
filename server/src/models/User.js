@@ -21,10 +21,16 @@ const userSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Note'
     }],
-    userAreas: [{
+    userPollenData: [{
         type: Schema.Types.ObjectId,
-        ref: 'Area'
-    }]
+        ref: 'PollenData'
+    }],
+    userDefaultLocation : {
+        type: Schema.Types.ObjectId,
+        ref: 'Location', 
+        default: 'Małopolskie',
+        required: true
+    }
 });
 
 module.exports = mongoose.model('User', userSchema);
