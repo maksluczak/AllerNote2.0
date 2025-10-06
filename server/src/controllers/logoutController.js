@@ -1,7 +1,6 @@
 const User = require('../models/User');
 
 const handleLogout = async (req, res) => {
-    // na frontendzie rowniez trzeba usunac accessToken!!!!!!!!!!!!!!!!!!
     try {
         const cookies = req.cookies;
         if (!cookies?.jwt) {
@@ -17,7 +16,7 @@ const handleLogout = async (req, res) => {
         foundUser.refreshToken = '';
         const result = await foundUser.save();
         
-        res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true }); //potem jeszcze secure: true
+        res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });
         res.sendStatus(204);
     } catch (error) {
         console.error('Server Error:', error);

@@ -33,22 +33,6 @@ const updateUsernameByUserId = async (req, res) => {
     }
 };
 
-const updateEmailByUserId = async (req, res) => {
-    try {
-        const userId = req.params.id;
-        const { email } = req.body;
-
-        if (!email) {
-            return res.status(400).json({ message: 'Email is required' });
-        }
-
-        const user = await User.findByIdAndUpdate(userId, { email }, { new: true });
-        return res.status(201).json({ "message": `Email updated: ${user}`});
-    } catch (err) {
-        return res.status(404).json({ error: err.message });
-    }
-};
-
 const updatePasswordByUserId = async (req, res) => {
     try {
         const userId = req.params.id;
@@ -60,7 +44,7 @@ const updatePasswordByUserId = async (req, res) => {
 
         const hashedPwd = await bcrypt.hash(password, 10);
 
-        const user = await User.findByIdAndUpdate(userId, {password: hashedPwd}, { new: true });
+        const user = await User.findByIdAndUpdate(userId, { password: hashedPwd }, { new: true });
         return res.status(201).json({ "message": `Password updated: ${user}`});
     } catch (err) {
         return res.status(404).json({ error: err.message });
@@ -71,6 +55,5 @@ const updatePasswordByUserId = async (req, res) => {
 module.exports = {
     getUserById,
     updateUsernameByUserId,
-    updateEmailByUserId,
     updatePasswordByUserId
 }
