@@ -27,9 +27,7 @@ const userSchema = new Schema({
     }],
     userDefaultLocation : {
         type: Schema.Types.ObjectId,
-        ref: 'Location', 
-        default: 'Małopolskie',
-        required: true
+        ref: 'Location'
     }
 });
 
