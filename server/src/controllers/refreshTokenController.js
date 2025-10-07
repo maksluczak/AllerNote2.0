@@ -25,14 +25,15 @@ const handleRefreshToken = async (req, res) => {
                     return res.sendStatus(403);
                 }
                 const accessToken = jwt.sign(
-                    { 
-                        "UserInfo": {
-                            "email": decoded.email
-                        } 
-                    }, 
+                    {
+                        UserInfo: {
+                            id: foundUser._id,
+                            email: foundUser.email
+                        }
+                    },
                     process.env.ACCESS_TOKEN_SECRET,
-                    { expiresIn: '15m' } 
-                );
+                    { expiresIn: '15m' }
+                  );                  
                 res.json({ accessToken });
             }
         );

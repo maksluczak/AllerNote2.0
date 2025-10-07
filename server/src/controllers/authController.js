@@ -58,7 +58,8 @@ const handleLogin = async (req, res) => {
       const accessToken = jwt.sign(
         {
           UserInfo: {
-            id: foundUser._id
+            id: foundUser._id,
+            email: foundUser.email
           },
         },
         process.env.ACCESS_TOKEN_SECRET,
@@ -74,12 +75,13 @@ const handleLogin = async (req, res) => {
       await foundUser.save();
 
       res.cookie("jwt", refreshToken, {
-        secure: false,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
         sameSite: "Lax",
-        maxAge: 24 * 60 * 60 * 1000,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      return res.json({ "token": accessToken });
+      return res.json({ accessToken });
     } else {
       return res.sendStatus(401);
     }
