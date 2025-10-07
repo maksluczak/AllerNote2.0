@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Hamburger from "./Hamburger";
 import LoginButton from "./LoginButton";
 import { useAuth } from "@/context/AuthContext";
+import { apiFetch } from "@/lib/api";
 
 export default function Nav() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -13,51 +14,45 @@ export default function Nav() {
   const submenuRef = useRef(null);
   const [userProfile, setUserProfile] = useState(null);
 
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const fetchUserById = async () => {
-    if (!user.UserInfo.id) return;
+    if (!user?.id) return;
     try {
-      const res = await fetch(`http://localhost:8080/user/${user.UserInfo.id}`);
-      if (!res.ok) {
-        const errorData = await res.json();
-        console.error('Failed to fetch user details:', errorData);
-        throw new Error(`HTTP error! ${res.status}`);
-      }
-      const data = await res.json();
+      const data = await apiFetch(`/user/${user.id}`);
       setUserProfile(data.username);
       setIsLoggedIn(true);
-      console.log(data);
     } catch (err) {
       console.error(`Error fetching user details: ${err.message}`);
+      setIsLoggedIn(false);
     }
-  }
+  };
 
   useEffect(() => {
-    if (user?.UserInfo?.id) {
+    if (user?.id) {
       fetchUserById();
     } else {
-      setIsLoggedIn(null);
+      setIsLoggedIn(false);
     }
-  }, [user?.UserInfo?.id]);
+  }, [user?.id]);
 
-  function clickOutsideHandler(e) {
-    if (submenuRef.current && !submenuRef.current.contains(e.target)) {
-      setSubmenuIsOpen(false);
-    }
-  }
   useEffect(() => {
-    document.addEventListener("mousedown", (e) => clickOutsideHandler(e));
+    const clickOutsideHandler = (e) => {
+      if (submenuRef.current && !submenuRef.current.contains(e.target)) {
+        setSubmenuIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", clickOutsideHandler);
     return () => {
-      document.removeEventListener("mousedown", (e) => clickOutsideHandler(e));
+      document.removeEventListener("mousedown", clickOutsideHandler);
     };
   }, []);
 
   return (
     <nav className="w-full bg-white fixed top-0 left-0 shadow-sm z-[9999]">
-      <div className="body-spacing flex justify-between items-center  py-3">
+      <div className="body-spacing flex justify-between items-center py-3">
         <Link href="/">
-          <Image src="/logo.png" width={40} height={30} alt="" />
+          <Image src="/logo.png" width={40} height={30} alt="logo" />
         </Link>
 
         <Hamburger
@@ -66,26 +61,26 @@ export default function Nav() {
         />
 
         <ul
-          className={`flex flex-col items-start absolute p-2 bg-white top-[calc(100%+1rem)] right-4 shadow-md rounded-md transform ${navIsOpen
-            ? "translate-x-0 opacity-100"
-            : "translate-x-[calc(100%+1.1rem)] opacity-0 md:translate-x-0 md:opacity-100"
-            } transition-all md:flex-row md:gap-3 md:p-0 md:items-center md:static md:bg-transparent md:shadow-none md:rounded-none`}
+          className={`flex flex-col items-start absolute p-2 bg-white top-[calc(100%+1rem)] right-4 shadow-md rounded-md transform ${
+            navIsOpen
+              ? "translate-x-0 opacity-100"
+              : "translate-x-[calc(100%+1.1rem)] opacity-0 md:translate-x-0 md:opacity-100"
+          } transition-all md:flex-row md:gap-3 md:p-0 md:items-center md:static md:bg-transparent md:shadow-none md:rounded-none`}
         >
           {isLoggedIn && (
-            <>
-
-              <li className="block">
-                <Link href="/kalendarz" className="block w-full p-2 text-left">
-                  Kalendarz
-                </Link>
-              </li>
-            </>
+            <li>
+              <Link href="/kalendarz" className="block w-full p-2 text-left">
+                Kalendarz
+              </Link>
+            </li>
           )}
-          <li className="block">
+
+          <li>
             <Link href="/alergeny" className="block w-full p-2 text-left">
               Co niesie wiatr?
             </Link>
           </li>
+
           <li className="flex flex-col-reverse md:relative" ref={submenuRef}>
             <div className="flex justify-center border-t pt-4 mt-2 md:pt-0 md:mt-0 md:ml-4 md:peer">
               <LoginButton
@@ -97,21 +92,25 @@ export default function Nav() {
               />
             </div>
             <ul
-              className={`md:flex md:flex-col md:items-start md:absolute md:p-2 md:bg-white md:top-[calc(100%+1.5rem)] md:right-0 md:shadow-md md:rounded-md md:transform ${submenuIsOpen
+              className={`md:flex md:flex-col md:items-start md:absolute md:p-2 md:bg-white md:top-[calc(100%+1.5rem)] md:right-0 md:shadow-md md:rounded-md md:transform ${
+                submenuIsOpen
                   ? "md:visible md:translate-y-0 md:opacity-100 submenu-transition-in"
                   : "md:invisible md:-translate-y-5 md:opacity-0 submenu-transition-out"
-                } `}
+              }`}
             >
-              <li className="block border-t pt-2 mt-2 md:pt-0 md:mt-0 md:border-t-0">
+              <li>
                 <Link href="/ustawienia" className="block w-full p-2 text-left">
                   Ustawienia
                 </Link>
               </li>
               {isLoggedIn && (
-                <li className="block">
+                <li>
                   <button
                     onClick={() => {
+                      logout();
                       setIsLoggedIn(false);
+                      setUserProfile(null);
+                      setSubmenuIsOpen(false);
                     }}
                     className="block w-full p-2 text-left"
                   >

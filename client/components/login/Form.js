@@ -10,7 +10,6 @@ export default function Form({
   password,
   nickname,
   email,
-  voivodship,
   btnText,
   registration = false,
 }) {
@@ -51,41 +50,42 @@ export default function Form({
     }
 
     try {
-      const path = `${registration ? "/auth/register" : "/auth/login"}`;
+      const path = registration ? "/auth/register" : "/auth/login";
       const body = registration
         ? { username: inputName, email: inputEmail, password: inputPassword }
         : { email: inputEmail, password: inputPassword };
 
       const res = await fetch(`http://localhost:8080${path}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", 
         body: JSON.stringify(body),
       });
 
+      const data = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        const err = await res.json();
-        console.error("Błąd:", err.message || res.statusText);
-        alert(err.message || "Błąd logowania/rejestracji");
+        console.error("Błąd:", data.message || res.statusText);
+        alert(data.message || "Błąd logowania/rejestracji");
         return;
       }
-
-      const data = await res.json();
 
       if (registration) {
         alert("Zarejestrowano pomyślnie. Zaloguj się.");
         clearInputs();
         router.push("/login");
       } else {
-        login(data.token);
+        if (!data.accessToken) {
+          alert("Błąd serwera — brak tokena.");
+          return;
+        }
+
+        await login(data.accessToken);
         clearInputs();
-        router.push("/kalendarz");
       }
     } catch (err) {
       console.error("Błąd:", err);
-      alert("Błąd serwera.");
+      alert("Błąd serwera lub połączenia.");
     }
   }
 

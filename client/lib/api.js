@@ -1,8 +1,7 @@
 export const API_URL = "http://localhost:8080";
 
-export async function apiFetch(path, options = {}) {
+async function rawFetch(path, options = {}) {
   const token = localStorage.getItem("jwt");
-
   const headers = {
     "Content-Type": "application/json",
     ...options.headers,
@@ -13,17 +12,44 @@ export async function apiFetch(path, options = {}) {
   }
 
   const res = await fetch(`${API_URL}${path}`, {
+    credentials: "include",
     ...options,
     headers,
   });
+  return res;
+}
+
+export async function apiFetch(path, options = {}) {
+  let res = await rawFetch(path, options);
+
+  // ✅ poprawione porównanie
+  if (res.status === 401) {
+    const refreshRes = await rawFetch("/refresh", { method: "GET" });
+
+    if (refreshRes.ok) {
+      const data = await refreshRes.json();
+      const newAccessToken = data.accessToken;
+      localStorage.setItem("jwt", newAccessToken);
+
+      // ponowne zapytanie z nowym tokenem
+      res = await rawFetch(path, options);
+    } else {
+      throw new Error("Session expired");
+    }
+  }
 
   if (res.status === 404) {
     return null;
   }
 
   if (!res.ok) {
-    throw new Error(`API error ${res.status}`);
+    const text = await res.text().catch(() => null);
+    throw new Error(`API error ${res.status} ${text || ""}`);
   }
 
-  return res.json();
+  const contentType = res.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    return res.json();
+  }
+  return null;
 }

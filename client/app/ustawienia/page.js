@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function SettingsPage() {
   const { user, logout } = useAuth();
-  const userId = user?.UserInfo?.id;
+  const userId = user?.id;
 
   const [username, setUsername] = useState("");
   const [isEditingUsername, setIsEditingUsername] = useState(false);
