@@ -1,10 +1,11 @@
 "use client";
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
 import InputBox from "./InputBox";
 import ButtonPrimary from "../buttons/ButtonPrimary";
 import LinkUnderline from "../buttons/LinkUnderline";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { apiFetch } from "@/lib/api";
 
 export default function Form({
   password,
@@ -14,10 +15,11 @@ export default function Form({
   registration = false,
 }) {
   const router = useRouter();
-  const [inputName, setInputName] = React.useState("");
-  const [inputEmail, setInputEmail] = React.useState("");
-  const [inputPassword, setInputPassword] = React.useState("");
-  const [inputRepeatedPassword, setInputRepeatedPassword] = React.useState("");
+  const [inputName, setInputName] = useState("");
+  const [inputEmail, setInputEmail] = useState("");
+  const [inputPassword, setInputPassword] = useState("");
+  const [inputRepeatedPassword, setInputRepeatedPassword] = useState("");
+  const [defaultLocation, setDefaultLocation] = useState("");
 
   const { login } = useAuth();
 
@@ -28,6 +30,15 @@ export default function Form({
       inputPassword,
       inputRepeatedPassword,
     });
+
+    const fetchDefaultLocationId = async () => {
+      const data = await apiFetch(`/location/Małopolskie`, {
+        method: "GET",
+      });
+      setDefaultLocation(data.id);
+    };
+
+    fetchDefaultLocationId();
   }, [inputName, inputEmail, inputPassword, inputRepeatedPassword]);
 
   async function submitHandler(e) {
@@ -52,7 +63,7 @@ export default function Form({
     try {
       const path = registration ? "/auth/register" : "/auth/login";
       const body = registration
-        ? { username: inputName, email: inputEmail, password: inputPassword }
+        ? { username: inputName, email: inputEmail, password: inputPassword, defaultLocation: defaultLocation}
         : { email: inputEmail, password: inputPassword };
 
       const res = await fetch(`http://localhost:8080${path}`, {

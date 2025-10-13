@@ -22,7 +22,6 @@ async function rawFetch(path, options = {}) {
 export async function apiFetch(path, options = {}) {
   let res = await rawFetch(path, options);
 
-  // ✅ poprawione porównanie
   if (res.status === 401) {
     const refreshRes = await rawFetch("/refresh", { method: "GET" });
 
@@ -31,7 +30,6 @@ export async function apiFetch(path, options = {}) {
       const newAccessToken = data.accessToken;
       localStorage.setItem("jwt", newAccessToken);
 
-      // ponowne zapytanie z nowym tokenem
       res = await rawFetch(path, options);
     } else {
       throw new Error("Session expired");
