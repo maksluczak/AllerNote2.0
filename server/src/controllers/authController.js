@@ -3,9 +3,9 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const handleNewUser = async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, defaultLocation } = req.body;
 
-  if (!username || !email || !password) {
+  if (!username || !email || !password || !defaultLocation) {
     return res.status(400).json({
       message: "Username, email, and password are required."
     });
@@ -27,7 +27,8 @@ const handleNewUser = async (req, res) => {
     const newUser = await User.create({
       username,
       email,
-      password: hashedPwd
+      password: hashedPwd,
+      userDefaultLocation: defaultLocation
     });
 
     console.log(newUser);

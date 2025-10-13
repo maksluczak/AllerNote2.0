@@ -32,7 +32,7 @@ const createLocation = async (req, res) => {
 
 const getLocationByVoivodeshipName = async (req, res) => {
     try {
-        const { voivodeship } = req.body;
+        const voivodeship = req.params.voivodeship;
         if (!voivodeship) {
             return res.status(400).json({ message: "Voivodeship name is required." });
         }
