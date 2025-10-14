@@ -6,6 +6,6 @@ const router = express.Router();
 router.get("/:id", userController.getUserById);
 router.put("/username/:id", userController.updateUsernameByUserId);
 router.put("/password/:id", userController.updatePasswordByUserId);
-router.get("/location", userController.getUserLocation);
+router.get("/me/location/:id", userController.getUserLocation);
 
 module.exports = router;
