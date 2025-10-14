@@ -6,6 +6,7 @@ import { apiFetch } from "@/lib/api";
 
 export default function VoivodeshipSelect() {
   const { user } = useAuth();
+  const userId = user?.id;
   const [defaultLocation, setDefaultLocation] = useState("");
 
   const VOIVODESHIPS = [
@@ -30,25 +31,27 @@ export default function VoivodeshipSelect() {
   useEffect(() => {
     const fetchUserLocation = async () => {
       try {
-        const res = await apiFetch("/user/location");
+        const res = await apiFetch(`/user/me/location/${userId}`);
+
+        if (!res || !res.defaultLocation) {
+          setDefaultLocation(4);
+          return;
+        }
+
         const userLocation = res.defaultLocation;
         const voivodeshipName = VOIVODESHIPS.find(
-          (voivodeship) => voivodeship.name === userLocation
+          (v) => v.name === userLocation
         );
-        if (voivodeshipName) {
-          setDefaultLocation(voivodeshipName.value);
-        } else {
-          setDefaultLocation(5);
-        }
+        setDefaultLocation(voivodeshipName ? voivodeshipName.value : 4);
       } catch (err) {
-        console.error("Błąd przy pobieraniu lokalizacji:", error);
-        setDefaultLocation(5);
+        console.error("Błąd przy pobieraniu lokalizacji:", err);
+        setDefaultLocation(4);
       }
     };
     if (user) {
       fetchUserLocation();
     } else {
-      setDefaultLocation(5);
+      setDefaultLocation(4);
     }
   }, [user]);
 
